@@ -1,0 +1,11 @@
+Objetives
+
+1. Creation of pcap dump file test vectors
+2. validation of input file extension and size of file
+3. Validation of file header file
+4. file name length and characters validation
+5. Securing coding - design & implementation, - Buffers, Strings , secure functions
+6. Creation of malformed TCPdump file, abuse case test vectors
+7. fuzzer input validation of code
+8. processing the input file upto a limited file size
+9. 

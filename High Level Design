@@ -1,0 +1,8 @@
+High level Design
+
+1. Language -  C/C++
+2. Execution and compilation  - GCC /Commandline
+3. Functional modularization in three source files
+4. usage of libpcap library for manipulating the pcap structures
+5. IDE/Platform  - QT
+6. 
