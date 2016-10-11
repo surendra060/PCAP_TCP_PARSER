@@ -89,7 +89,7 @@ int ProcessFrame(unsigned char *Frame_Data,int Frame_Length)
 int main(int argc, char *argv[])
 {
     int i,j;
-
+    int arg_max_length=15;
     int FlagFileOpen=0;
 
     int FrameLength;
@@ -101,7 +101,8 @@ int main(int argc, char *argv[])
 
     //To skip the Programm Name
     ++argv;--argc;
-    printf("\nNo of arguments are:%d",argc);
+
+    // No.of command line arguments checking and restricting to only one argument.
     if(argc < 1)
     {
         printf("\n Programm Requires one Argument, the PCAP file!!\n");
@@ -113,25 +114,37 @@ int main(int argc, char *argv[])
     }
     else{
         int arglen=strlen(argv[0]);
+
+        //File name length checking.
+        if(arglen >arg_max_length){
+            printf("\n File name is too big, Don't try to crash our programme!!!\n");
+            return 0;
+        }
+
+        //Special character checking in file name.
         int special_flag=0;
         for(int i=0;i<arglen;i++){
-            printf("\n%c",argv[0][i]);
-            switch(argv[0][i]){
-            case '\\':printf("\n Back slash is detected, It is not allowed in File-name.\n");
-                      special_flag=1;
-                      break;
-            case '*':printf("\n Star symbol is detected, It is not allowed in File-name.\n");
-                     special_flag=1;
-                     break;
-            case '\'':printf("\n single quote is detected, It is not allowed in File-name.\n");
-                     special_flag=1;
-                     break;
-            case '"':printf("\n Star symbol is detected, It is not allowed in File-name.\n");
-                     special_flag=1;
-                     break;
+            //printf("\n%c",argv[0][i]);
+            switch(argv[0][i])
+            {
+                case '\\':  printf("\n Back slash is detected, It is not allowed in File-name.\n");
+                            special_flag=1;
+                            break;
+                case '*':   printf("\n Star symbol is detected, It is not allowed in File-name.\n");
+                            special_flag=1;
+                            break;
+                case '\'':  printf("\n single quote is detected, It is not allowed in File-name.\n");
+                            special_flag=1;
+                            break;
+                case '"':   printf("\n Double quote is detected, It is not allowed in File-name.\n");
+                            special_flag=1;
+                            break;
+                // we can add speical characters here, if any.
             }
-            if(special_flag==1)
+            if(special_flag==1){
+                printf("\n Special characters are not allowed, Don't try to crash our programme!!!\n");
                 return 0;
+            }
         }
         printf("\n File Name is Proper and Accepted\n");
     }
