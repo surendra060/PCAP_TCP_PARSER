@@ -139,6 +139,9 @@ int main(int argc, char *argv[])
                 case '"':   printf("\n Double quote is detected, It is not allowed in File-name.\n");
                             special_flag=1;
                             break;
+                case ' ':   printf("\n Space is detected, It is not allowed in File-name.\n");
+                            special_flag=1;
+                            break;
                 // we can add speical characters here, if any.
             }
             if(special_flag==1){
