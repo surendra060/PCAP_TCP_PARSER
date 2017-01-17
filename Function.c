@@ -27,8 +27,8 @@ extern int FlagLibPcapFile;
 //************************************Extracting the Frame Length************************************
 int CheckFrameLength(unsigned char* FrameHeader)
 {
-    int i,FrameLength,FrameLength1,FrameLength2;
-
+    //int i,FrameLength,FrameLength1,FrameLength2; //   Unintilized variables pointed by Code Review - Initialized below
+    int i=0,FrameLength=0,FrameLength1=0,FrameLength2=0;
     i = 8;    
 
     if(FlagBigEndian == 1)
@@ -66,7 +66,7 @@ int CheckFrameLength(unsigned char* FrameHeader)
 //************************************Display the LinkLayer Protocol************************************
 int CheckLinkLayerProtocol(unsigned char* FileHeader)
 {
-    int i,Protocol;
+    int i=0,Protocol=0;     //   Unintilized variables pointed by Code Review - Initialized Now -17 Jan 17
 //the 20,21,22,23 byte location will tell the Protocol
 
     i=20;
@@ -86,8 +86,8 @@ int CheckLinkLayerProtocol(unsigned char* FileHeader)
 //************************************Display the Version Number************************************
 int CheckVersionNumber(unsigned char* FileHeader)
 {
-    int i;
-    int MajorVersion,MinorVersion;
+    int i=0;   //   Unintilized variables pointed by Code Review - Initialized Now -17 Jan 17
+    int MajorVersion=0,MinorVersion=0; //   Unintilized variables pointed by Code Review - Initialized Now -17 Jan 17
 //The 4,5,6 and 7 th bytes for version number, 4-5 for major number, 6-7 for minor number
     i =4;
 
@@ -227,8 +227,8 @@ extern void
 print_hex_ascii_line(const u_char *payload, int len, int offset, FILE *fdata)
 {
 
-    int i;
-    int gap;
+    int i=0;
+    int gap=0;   //   Unintilized variables pointed by Code Review - Initialized Now -17 Jan 17
     const u_char *ch;
 
     /* offset */
@@ -332,7 +332,7 @@ return;
 //To skip the Programm Name
  int ValidateFileName(int argc, char *argv[])
  {
-     int i,special_flag,arglen;
+     int i=0,special_flag=0,arglen=0;   //   Unintilized variables pointed by Code Review - Initialized Now -17 Jan 17
 
      int arg_max_length=25;
 
@@ -360,7 +360,7 @@ return;
         //argv[arg_max_length]= '\0';
 
         //Special character checking in file name.
-        special_flag=0;
+        //special_flag=0;  //   Unintilized variables pointed by Code Review - Initialized Now -17 Jan 17
         for(i=0;i<arglen;i++)
         {
             printf("%c",argv[0][i]);
