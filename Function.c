@@ -27,7 +27,7 @@ extern int FlagLibPcapFile;
 //************************************Extracting the Frame Length************************************
 int CheckFrameLength(unsigned char* FrameHeader)
 {
-    //int i,FrameLength,FrameLength1,FrameLength2; //   Unintilized variables pointed by Code Review - Initialized below
+    //int i,FrameLength,FrameLength1,FrameLength2; //   Unintilized variables pointed by Code Review - Initialized below 19-1-17
     int i=0,FrameLength=0,FrameLength1=0,FrameLength2=0;
     i = 8;    
 
