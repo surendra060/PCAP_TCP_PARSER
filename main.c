@@ -100,8 +100,14 @@ unsigned char LibPcapMagicNumberBigEndian[4] = {0xa1,0xb2,0xcd,0x34};
 int FlagBigEndian,FlagLittleEndian;
 int FlagLibPcapFile=0;
 
+/* For Team review issue "Unused variables and dead code":
+Function modified to remove the unused variable passed to the function as observed by the code review team - 19-01-2017
+(The parameter removed from the function is: total_frame_len)
+*/
+
 // Function to Extract Ethernet Frame Data (Src / Destination MAC and Next level of Protocol (Accept only IP) )
-int Extract_Eth_header(struct ether_header  *Eth_hdr, unsigned int total_frame_len){
+//int Extract_Eth_header(struct ether_header  *Eth_hdr, unsigned int total_frame_len){ //Issue: unused parameter ‘total_frame_len’ [-Wunused-parameter]
+int Extract_Eth_header(struct ether_header  *Eth_hdr){
 
     printf("\n**** Processing Ethernet Frame Header # %d\t ********\n", (ETH_count+1));
     printf("|-- Destinantion MAC Address : %02X:%02X:%02X:%02X:%02X:%02X\n", Eth_hdr->ether_dhost[0],Eth_hdr->ether_dhost[1], \
@@ -129,12 +135,19 @@ int Extract_Eth_header(struct ether_header  *Eth_hdr, unsigned int total_frame_l
     }
 
     ETH_count++;
-
+    // Issue: return is missing as observed in compilation with GCC -Wall -Wextra.
+    return 1;
 }
 
-// Function to Extract IP header Data
+/* Team code review issue "Unused variables and dead code":
+Function modified to remove the unused variable passed to the function as observed by the code review team - 19-01-2017
+(The parameter removed from the function is: IP_header_len)
+*/
 
-int Extract_IPdata(struct ip *ip, int IP_header_len){
+// Function to Extract IP header Data
+//int Extract_IPdata(struct ip *ip, int IP_header_len){ //Issue: unused parameter ‘IP_header_len’ [-Wunused-parameter]
+
+int Extract_IPdata(struct ip *ip){
     unsigned int TCP_pack_len;
     int size_ip = ((ip->ip_hl)*4);
     //check for validation of IP header Size
@@ -255,7 +268,13 @@ int Extract_TCPdata(struct TCP_hdr* tcp, unsigned int TCP_pack_len){
     return 1;
 }
 
-int ProcessFrame(unsigned char *Frame_Data,int Frame_Length)
+/*
+Code modification for closing of issue "Comparison between signed vs unsigned integer" in line nos 292 & 311 below - 19-01-2017.
+changed int Frame_Length to unsigned int Frame_Length in function call and defination.
+*/
+
+//int ProcessFrame(unsigned char *Frame_Data,int Frame_Length)  //Issue: Comparison between signed vs unsigned integer. - 19-01-2017.
+int ProcessFrame(unsigned char *Frame_Data,unsigned int Frame_Length)
 {
     int retValue, retEthValue;
     struct ether_header *Eth_hdr;
@@ -265,7 +284,7 @@ int ProcessFrame(unsigned char *Frame_Data,int Frame_Length)
 
     unsigned int IP_header_length;
 
-    int total_frame_len  = Frame_Length;
+    //int total_frame_len  = Frame_Length; //Issue: unused variable ‘total_frame_len’ [-Wunused-variable] -19-01-2017
 
     printf("\nProcessing Frame\n");
 
@@ -275,10 +294,12 @@ int ProcessFrame(unsigned char *Frame_Data,int Frame_Length)
         return 0;
     }
 
-    printf("Frame_Header %x\n", Frame_Data);
+    //printf("Frame_Header %x\n", Frame_Data);      //Issue: format ‘%x’ expects argument of type
+                            //‘unsigned int’, but argument 2 has type ‘unsigned char *’ [-Wformat=]
+    printf("Frame_Header %p\n", Frame_Data);
 
     Eth_hdr = (struct ether_header*) Frame_Data;
-    retEthValue = Extract_Eth_header(Eth_hdr, total_frame_len);
+    retEthValue = Extract_Eth_header(Eth_hdr);
     if (retEthValue == -1)
         return 0;
 
@@ -309,7 +330,7 @@ int ProcessFrame(unsigned char *Frame_Data,int Frame_Length)
 
         // Calll function to extract data from IP header and return TCP_pack_Len
 
-        TCP_pack_len = Extract_IPdata(ip,IP_header_length);
+        TCP_pack_len = Extract_IPdata(ip);
         printf("\nTCP_pack_Len = %u \t \t IP_count = %d\n",TCP_pack_len,IP_count);
         fprintf(fdata, "\nTCP_pack_Len = %u \t \t IP_count = %d\n",TCP_pack_len,IP_count);
 
@@ -364,7 +385,8 @@ int ProcessFrame(unsigned char *Frame_Data,int Frame_Length)
 //The Main Function
 int main(int argc, char *argv[])
 {
-    int i;
+    //int i;                // Issue: comparison between signed and unsigned integer expression.
+    unsigned int i;
     //Total Frames analysed
     int TotalFrame=1;
     //Total Frames escaped
@@ -372,7 +394,8 @@ int main(int argc, char *argv[])
     //Total Error Frames
     int ErrorFrameCounter=1;
     unsigned char ch;
-    int Frame_Protocol,FrameLength;
+    //int Frame_Protocol,FrameLength; // Code Review Issue: Comparison of signed vs unsigned. -19-01-2017
+    unsigned int Frame_Protocol,FrameLength; // Corrected unsigned declaration.
     //The pointers for collecting the various important data
     unsigned char *FileHeader,*FrameHeader,*FrameData;
 
@@ -401,8 +424,20 @@ int main(int argc, char *argv[])
 
         //Opening the file as per input parameter,
         fp = fopen(argv[1],"rb");
+
+/*
+Code modification for closing of issue of "ordered comparison of pointer with integer zero" using -Wextra in GCC - 19-01-2017.
+
+*/
+
         //The condition, the file handler has to be more than 0, which is usual secenario,
-        if(fp > 0)
+        //if(fp > 0) // Issue: ordered comparison of pointer with integer zero [-Wextra] - 19-01-2017.
+        if(fp == NULL)
+        {
+            printf("\nThe PCAP File could not open successfully");
+            exit(1);
+        }
+        else
         {
             printf("Input FILE OPEN SUCCESSFUL!!!!!\n");
 
@@ -520,7 +555,11 @@ int main(int argc, char *argv[])
                                 printf("\n The FrameEscape Counter excedded its limit\n");
                                 return 0;
                             }
-                            //Just rotating the fp counter to the next frame header,
+		// Issue #4 raised code review (Team B) - correction done on 19.01.2017
+		// Logical assumption of FrameLength being correct in file for all frames may not be correct for a malformed/fuzzed file.
+		// therefore, Escaping the current frame being processed to jump to next frame is not possible.
+		// and hence, further parsing of the input file is discontinued (code commented below) and progame exit gracefully. 
+                            /*//Just rotating the fp counter to the next frame header,
                             for(i=0;i<FrameLength;i++)
                             {
                                 ch = fgetc(fp);
@@ -536,7 +575,11 @@ int main(int argc, char *argv[])
                             {
                                 //printf("\nFILE ENDED\n");
                                 ch = 0xFF;
-                            }
+                            }*/
+		//Correction for gracefull exiting of program on detection of incorrect value of framelength - 19.01.2017
+				ch = 0xFF; 
+				printf("\n Found corrupted Frame Length and exiting the program now!!! \n");
+
                         }
                     }while(ch!=0xFF); //The condition is to check the end of file
 
@@ -569,11 +612,11 @@ int main(int argc, char *argv[])
                 fclose(fdata);
                 fclose(fp);
         }
-        else
+        /*else
         {
             printf("The PCAP File not able to Open\n");
             return 0;
-        }
+        }*/
     }
     else
     {
